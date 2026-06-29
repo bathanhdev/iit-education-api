@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Device {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  duid         String      @unique
+  tv           String?
+  authLog      DateTime[]  @default([])
+  ClientKeys   ClientKey[] @relation(fields: [clientKeyIds], references: [id])
+  clientKeyIds String[]    @db.ObjectId
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model DataPack {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  Data         Data[]      @relation(fields: [dataIds], references: [id])
+  dataIds      String[]    @db.ObjectId
+  ClientKeys   ClientKey[] @relation(fields: [clientKeyIds], references: [id])
+  clientKeyIds String[]    @db.ObjectId
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model ClientKey {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  key            String     @unique
+  limit          Int?
+  decs           String?
+  expirationDate DateTime?
+  Devices        Device[]   @relation(fields: [deviceIds], references: [id])
+  deviceIds      String[]   @db.ObjectId
+  DataPacks      DataPack[] @relation(fields: [dataPackIds], references: [id])
+  dataPackIds    String[]   @db.ObjectId
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Subject {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  icon      String?
+  imageIcon String?
+  decs      String
+  Topic     Topic[]
+  Data      Data[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Topic {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  Subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String   @db.ObjectId
+  Data      Data[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Grade {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  Data      Data[]   @relation(fields: [dataIds], references: [id])
+  dataIds   String[] @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DataType {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  icon      String?
+  Data      Data[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubData {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  url       String?
+  decs      String
+  Data      Data?    @relation(fields: [dataId], references: [id])
+  dataId    String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Data {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  Subject     Subject    @relation(fields: [subjectId], references: [id])
+  subjectId   String     @db.ObjectId
+  Topic       Topic      @relation(fields: [topicId], references: [id])
+  topicId     String     @db.ObjectId
+  Grades      Grade[]    @relation(fields: [gradeIds], references: [id])
+  gradeIds    String[]   @db.ObjectId
+  Type        DataType   @relation(fields: [dataTypeId], references: [id])
+  dataTypeId  String     @db.ObjectId
+  DataPacks   DataPack[] @relation(fields: [dataPackIds], references: [id])
+  dataPackIds String[]   @db.ObjectId
+  name        String
+  thumbnail   String?
+  SubData     SubData[]
+  author      String?
+  uses        String?
+  decs        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}

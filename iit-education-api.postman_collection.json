@@ -1,0 +1,1131 @@
+{
+  "info": {
+    "name": "IIT Education API",
+    "description": "Postman collection generated from the current NestJS controllers. Set `baseUrl` to your API host and run `Auth / Sign In` to populate `accessToken` for protected routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:{{port}}"
+    },
+    {
+      "key": "port",
+      "value": "3456"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": "admin"
+    },
+    {
+      "key": "adminPassword",
+      "value": "password"
+    },
+    {
+      "key": "key",
+      "value": "demo-key"
+    },
+    {
+      "key": "deviceDuid",
+      "value": "demo-device-001"
+    },
+    {
+      "key": "subjectId",
+      "value": ""
+    },
+    {
+      "key": "topicId",
+      "value": ""
+    },
+    {
+      "key": "gradeId",
+      "value": ""
+    },
+    {
+      "key": "dataTypeId",
+      "value": ""
+    },
+    {
+      "key": "dataId",
+      "value": ""
+    },
+    {
+      "key": "subDataId",
+      "value": ""
+    },
+    {
+      "key": "dataPackId",
+      "value": ""
+    },
+    {
+      "key": "fromDataPackId",
+      "value": ""
+    },
+    {
+      "key": "clientKeyId",
+      "value": ""
+    },
+    {
+      "key": "deviceId",
+      "value": ""
+    },
+    {
+      "key": "fileName",
+      "value": "sample.pdf"
+    },
+    {
+      "key": "streamFile",
+      "value": "sample.pdf"
+    },
+    {
+      "key": "page",
+      "value": "1"
+    },
+    {
+      "key": "limit",
+      "value": "20"
+    },
+    {
+      "key": "search",
+      "value": ""
+    },
+    {
+      "key": "keyCount",
+      "value": ""
+    },
+    {
+      "key": "minKeyCount",
+      "value": ""
+    },
+    {
+      "key": "maxKeyCount",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "App",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/"
+          }
+        },
+        {
+          "name": "Stream Uploaded File",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/uploads/{{streamFile}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', json.access_token);",
+                  "    pm.environment.set('accessToken', json.access_token);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{adminId}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/signin"
+          }
+        },
+        {
+          "name": "Validate Key",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"{{key}}\",\n  \"duid\": \"{{deviceDuid}}\",\n  \"tv\": \"1.0.0\",\n  \"reAuth\": false\n}"
+            },
+            "url": "{{baseUrl}}/auth/validate-key"
+          }
+        },
+        {
+          "name": "Get Data By Key",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auth/get-data/{{key}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subject",
+      "item": [
+        {
+          "name": "Create Subject",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('subjectId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mathematics\",\n  \"icon\": \"calculator\",\n  \"imageIcon\": \"\",\n  \"decs\": \"Math subject\"\n}"
+            },
+            "url": "{{baseUrl}}/subject"
+          }
+        },
+        {
+          "name": "Upload Subject Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/subject/upload/{{subjectId}}"
+          }
+        },
+        {
+          "name": "Get Subjects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/subject"
+          }
+        },
+        {
+          "name": "Get Subject By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/subject/{{subjectId}}"
+          }
+        },
+        {
+          "name": "Update Subject",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mathematics Updated\",\n  \"icon\": \"calculator\",\n  \"imageIcon\": \"\",\n  \"decs\": \"Updated description\"\n}"
+            },
+            "url": "{{baseUrl}}/subject/{{subjectId}}"
+          }
+        },
+        {
+          "name": "Delete Subject",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/subject/{{subjectId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topic",
+      "item": [
+        {
+          "name": "Create Topic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('topicId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Algebra\",\n  \"subjectId\": \"{{subjectId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/topic"
+          }
+        },
+        {
+          "name": "Get Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/topic"
+          }
+        },
+        {
+          "name": "Get Topic By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/topic/{{topicId}}"
+          }
+        },
+        {
+          "name": "Update Topic",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Algebra Updated\",\n  \"subjectId\": \"{{subjectId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/topic/{{topicId}}"
+          }
+        },
+        {
+          "name": "Delete Topic",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/topic/{{topicId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Grade",
+      "item": [
+        {
+          "name": "Create Grade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('gradeId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Grade 1\",\n  \"dataIds\": []\n}"
+            },
+            "url": "{{baseUrl}}/grade"
+          }
+        },
+        {
+          "name": "Get Grades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/grade"
+          }
+        },
+        {
+          "name": "Get Grade By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/grade/{{gradeId}}"
+          }
+        },
+        {
+          "name": "Update Grade",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Grade 1 Updated\",\n  \"dataIds\": []\n}"
+            },
+            "url": "{{baseUrl}}/grade/{{gradeId}}"
+          }
+        },
+        {
+          "name": "Delete Grade",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/grade/{{gradeId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Data Type",
+      "item": [
+        {
+          "name": "Create Data Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('dataTypeId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PDF\",\n  \"icon\": \"file-pdf\"\n}"
+            },
+            "url": "{{baseUrl}}/data-type"
+          }
+        },
+        {
+          "name": "Get Data Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data-type"
+          }
+        },
+        {
+          "name": "Get Data Type By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data-type/{{dataTypeId}}"
+          }
+        },
+        {
+          "name": "Update Data Type",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PDF Updated\",\n  \"icon\": \"file-pdf-updated\"\n}"
+            },
+            "url": "{{baseUrl}}/data-type/{{dataTypeId}}"
+          }
+        },
+        {
+          "name": "Delete Data Type",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/data-type/{{dataTypeId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Data Pack",
+      "item": [
+        {
+          "name": "Create Data Pack",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('dataPackId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Default Pack\",\n  \"dataIds\": [],\n  \"clientKeyIds\": []\n}"
+            },
+            "url": "{{baseUrl}}/data-pack"
+          }
+        },
+        {
+          "name": "Get Data Packs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data-pack"
+          }
+        },
+        {
+          "name": "Get Data Pack By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data-pack/{{dataPackId}}"
+          }
+        },
+        {
+          "name": "Get Data Pack Keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data-pack/{{dataPackId}}/keys?page={{page}}&limit={{limit}}&search={{search}}"
+          }
+        },
+        {
+          "name": "Update Data Pack",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Pack\",\n  \"dataIds\": [\"{{dataId}}\"],\n  \"clientKeyIds\": []\n}"
+            },
+            "url": "{{baseUrl}}/data-pack/{{dataPackId}}"
+          }
+        },
+        {
+          "name": "Copy Data Pack Data",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromDataPackId\": \"{{fromDataPackId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/data-pack/copy/{{dataPackId}}"
+          }
+        },
+        {
+          "name": "Delete Data Pack",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/data-pack/{{dataPackId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Data",
+      "item": [
+        {
+          "name": "Create Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('dataId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subjectId\": \"{{subjectId}}\",\n  \"topicId\": \"{{topicId}}\",\n  \"gradeIds\": [\"{{gradeId}}\"],\n  \"dataTypeId\": \"{{dataTypeId}}\",\n  \"dataPackIds\": [\"{{dataPackId}}\"],\n  \"name\": \"Sample Lesson\",\n  \"thumbnail\": \"\",\n  \"author\": \"IIT\",\n  \"uses\": \"Study\",\n  \"decs\": \"Sample data item\"\n}"
+            },
+            "url": "{{baseUrl}}/data"
+          }
+        },
+        {
+          "name": "Create Many Data With Sub Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"subjectId\": \"{{subjectId}}\",\n      \"topicId\": \"{{topicId}}\",\n      \"gradeIds\": [\"{{gradeId}}\"],\n      \"dataTypeId\": \"{{dataTypeId}}\",\n      \"dataPackIds\": [\"{{dataPackId}}\"],\n      \"name\": \"Batch Lesson 1\",\n      \"thumbnail\": \"\",\n      \"author\": \"IIT\",\n      \"uses\": \"Study\",\n      \"decs\": \"Batch data item 1\",\n      \"subData\": [\n        {\n          \"name\": \"Batch Lesson 1 File\",\n          \"url\": \"\",\n          \"decs\": \"Batch sub data file 1\"\n        }\n      ]\n    },\n    {\n      \"subjectId\": \"{{subjectId}}\",\n      \"topicId\": \"{{topicId}}\",\n      \"gradeIds\": [\"{{gradeId}}\"],\n      \"dataTypeId\": \"{{dataTypeId}}\",\n      \"dataPackIds\": [\"{{dataPackId}}\"],\n      \"name\": \"Batch Lesson 2\",\n      \"thumbnail\": \"\",\n      \"author\": \"IIT\",\n      \"uses\": \"Study\",\n      \"decs\": \"Batch data item 2\",\n      \"subData\": []\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/data/create-many"
+          }
+        },
+        {
+          "name": "Get Data List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data?page={{page}}&limit={{limit}}&search={{search}}&subjectId={{subjectId}}&topicId={{topicId}}&gradeId={{gradeId}}&dataTypeId={{dataTypeId}}&dataPackId={{dataPackId}}"
+          }
+        },
+        {
+          "name": "Get Data By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/data/{{dataId}}"
+          }
+        },
+        {
+          "name": "Update Data",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Lesson\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"topicId\": \"{{topicId}}\",\n  \"gradeIds\": [\"{{gradeId}}\"],\n  \"dataTypeId\": \"{{dataTypeId}}\",\n  \"thumbnail\": \"\",\n  \"author\": \"IIT\",\n  \"uses\": \"Study\",\n  \"decs\": \"Updated data item\"\n}"
+            },
+            "url": "{{baseUrl}}/data/{{dataId}}"
+          }
+        },
+        {
+          "name": "Delete Many Data",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataIds\": [\"{{dataId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/data"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sub Data",
+      "item": [
+        {
+          "name": "Create Sub Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('subDataId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lesson File\",\n  \"url\": \"\",\n  \"decs\": \"Primary lesson file\",\n  \"dataId\": \"{{dataId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/sub-data"
+          }
+        },
+        {
+          "name": "Create Many Sub Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subData\": [\n    {\n      \"name\": \"Lesson File 1\",\n      \"url\": \"\",\n      \"decs\": \"File 1\",\n      \"dataId\": \"{{dataId}}\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/sub-data/create-many"
+          }
+        },
+        {
+          "name": "Upload Sub Data File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/sub-data/upload/{{subDataId}}"
+          }
+        },
+        {
+          "name": "Get Sub Data List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/sub-data?page={{page}}&limit={{limit}}"
+          }
+        },
+        {
+          "name": "Get Sub Data By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/sub-data/{{subDataId}}"
+          }
+        },
+        {
+          "name": "Update Sub Data",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Lesson File\",\n  \"decs\": \"Updated file description\"\n}"
+            },
+            "url": "{{baseUrl}}/sub-data/{{subDataId}}"
+          }
+        },
+        {
+          "name": "Delete Sub Data",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/sub-data/{{subDataId}}"
+          }
+        },
+        {
+          "name": "Stream Sub Data File",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/sub-data/stream/{{streamFile}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client Key",
+      "item": [
+        {
+          "name": "Create Client Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) { pm.collectionVariables.set('clientKeyId', json.id); pm.collectionVariables.set('key', json.key); } }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"{{key}}\",\n  \"limit\": 3,\n  \"decs\": \"Demo client key\",\n  \"expirationDate\": \"2026-12-31T23:59:59.000Z\",\n  \"deviceIds\": [],\n  \"dataPackIds\": [\"{{dataPackId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/client-key"
+          }
+        },
+        {
+          "name": "Create Random Client Keys",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"ignored-for-random\",\n  \"randomKeys\": 5,\n  \"limit\": 3,\n  \"decs\": \"Random keys\",\n  \"expirationDate\": \"2026-12-31T23:59:59.000Z\",\n  \"dataPackIds\": [\"{{dataPackId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/client-key/random"
+          }
+        },
+        {
+          "name": "Get Client Keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/client-key?page={{page}}&limit={{limit}}&search={{search}}&dataPackId={{dataPackId}}&deviceId={{deviceId}}"
+          }
+        },
+        {
+          "name": "Get Client Key By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/client-key/{{clientKeyId}}"
+          }
+        },
+        {
+          "name": "Update Client Key",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"{{key}}\",\n  \"limit\": 5,\n  \"decs\": \"Updated client key\",\n  \"expirationDate\": \"2026-12-31T23:59:59.000Z\",\n  \"deviceIds\": [],\n  \"dataPackIds\": [\"{{dataPackId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/client-key/{{clientKeyId}}"
+          }
+        },
+        {
+          "name": "Update Many Client Keys",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keys\": [\"{{key}}\"],\n  \"dataPackIds\": [\"{{dataPackId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/client-key/many"
+          }
+        },
+        {
+          "name": "Delete Client Key",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/client-key/{{clientKeyId}}"
+          }
+        },
+        {
+          "name": "Delete Many Client Keys",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keys\": [\"{{clientKeyId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/client-key/delete_many"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Device",
+      "item": [
+        {
+          "name": "Create Device",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 400) { const json = pm.response.json(); if (json.id) pm.collectionVariables.set('deviceId', json.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duid\": \"{{deviceDuid}}\",\n  \"tv\": \"1.0.0\",\n  \"authLog\": [],\n  \"clientKeyIds\": [\"{{clientKeyId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/device"
+          }
+        },
+        {
+          "name": "Get Devices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/device?page={{page}}&limit={{limit}}&search={{search}}&clientKeyId={{clientKeyId}}&keyCount={{keyCount}}&minKeyCount={{minKeyCount}}&maxKeyCount={{maxKeyCount}}"
+          }
+        },
+        {
+          "name": "Get Device By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/device/{{deviceId}}"
+          }
+        },
+        {
+          "name": "Update Device",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duid\": \"{{deviceDuid}}\",\n  \"tv\": \"1.0.1\",\n  \"clientKeyIds\": [\"{{clientKeyId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/device/{{deviceId}}"
+          }
+        },
+        {
+          "name": "Delete Device",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/device/{{deviceId}}"
+          }
+        },
+        {
+          "name": "Delete Many Devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceIds\": [\"{{deviceId}}\"],\n  \"duids\": []\n}"
+            },
+            "url": "{{baseUrl}}/device/delete_many"
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Upload",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/file-upload"
+          }
+        },
+        {
+          "name": "Upload Chunk",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "chunk",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "chunkIndex",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "totalChunks",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "fileName",
+                  "value": "{{fileName}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "{{subDataId}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/file-upload/chunk"
+          }
+        }
+      ]
+    }
+  ]
+}
