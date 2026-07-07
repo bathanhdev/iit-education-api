@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { UpdateSubDatumDto } from './dto/update-sub_datum.dto';
 import { CreateManySubDatumDto } from './dto/create_many-sub_datum.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubData } from '@prisma/client';
-import { unlink } from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { Response } from 'express';
@@ -35,24 +36,18 @@ export class SubDataService {
   }
 
   async upload(id: string, file: Express.Multer.File): Promise<SubData | null> {
-    await this.prisma.subData.findUnique(
-      {
-        where: { id },
-      }
-    ).then(data => {
-      if (data && data.url) {
-        unlink(data.url, () => { })
-      }
-    })
+    const foundSubData = await this.prisma.subData.findUnique({
+      where: { id },
+    });
+    if (!foundSubData) {
+      await fs.promises.unlink(file.path).catch(() => { });
+      throw new NotFoundException('SubData not found');
+    }
 
-    return this.prisma.subData.update(
-      {
-        where: { id },
-        data: {
-          url: file.path
-        }
-      }
-    );
+    const extension = path.extname(file.originalname);
+    const finalPath = path.join(path.dirname(file.path), `${id}${extension}`);
+
+    return this.replaceSubDataFileSafely(id, file.path, finalPath, foundSubData.url);
   }
 
   async findAll(query?: PaginationQuery) {
@@ -80,7 +75,7 @@ export class SubDataService {
       where: { id }
     }).then(subData => {
       if (subData.url) {
-        unlink(subData.url, () => { })
+        fs.unlink(subData.url, () => { })
       }
       return subData
     });
@@ -96,5 +91,47 @@ export class SubDataService {
     res.setHeader('Content-Disposition', `attachment; filename="${stream.headers['file-name'] || 'downloadedFile'}"`);
 
     stream.data.pipe(res);
+  }
+
+  private async replaceSubDataFileSafely(
+    id: string,
+    tempPath: string,
+    finalPath: string,
+    oldPath?: string | null,
+  ): Promise<SubData | null> {
+    const backupPath = `${finalPath}.${Date.now()}.backup`;
+    const finalExists = fs.existsSync(finalPath);
+    let backupCreated = false;
+
+    try {
+      if (finalExists) {
+        await fs.promises.rename(finalPath, backupPath);
+        backupCreated = true;
+      }
+
+      await fs.promises.rename(tempPath, finalPath);
+      const updatedSubData = await this.prisma.subData.update({
+        where: { id },
+        data: {
+          url: finalPath,
+        },
+      });
+
+      if (backupCreated) {
+        await fs.promises.unlink(backupPath).catch(() => { });
+      }
+      if (oldPath && oldPath !== finalPath && oldPath !== backupPath) {
+        await fs.promises.unlink(oldPath).catch(() => { });
+      }
+
+      return updatedSubData;
+    } catch (error) {
+      await fs.promises.unlink(finalPath).catch(() => { });
+      if (backupCreated && !fs.existsSync(finalPath)) {
+        await fs.promises.rename(backupPath, finalPath).catch(() => { });
+      }
+      await fs.promises.unlink(tempPath).catch(() => { });
+      throw error;
+    }
   }
 }

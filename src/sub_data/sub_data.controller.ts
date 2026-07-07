@@ -3,7 +3,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { unlink } from 'fs';
 import { diskStorage } from 'multer';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { v4 as uuid } from 'uuid';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { UpdateSubDatumDto } from './dto/update-sub_datum.dto';
 import { CreateManySubDatumDto } from './dto/create_many-sub_datum.dto';
@@ -30,12 +29,14 @@ export class SubDataController {
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: 'uploads/',
-      filename(_req, file, callback) {
+      filename(req, file, callback) {
+        const id = req.params.id;
+        const extension = file.originalname.includes('.') ? file.originalname.split('.').pop() : '';
+        const tempSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const fileName = extension ? id + '.' + tempSuffix + '.uploading.' + extension : id + '.' + tempSuffix + '.uploading';
         callback(
           null,
-          Buffer.from(`${uuid()}.${file.originalname.split(".").slice(-1)[0]}`, 'latin1').toString(
-            'utf8',
-          ),
+          Buffer.from(fileName, 'latin1').toString('utf8'),
         )
       },
     }),

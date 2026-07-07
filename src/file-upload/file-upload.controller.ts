@@ -11,8 +11,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from './file-upload.service';
 import * as fs from 'fs';
 import * as path from 'path';
-import { diskStorage, memoryStorage } from 'multer';
-import { unlink } from 'fs';
+import { memoryStorage } from 'multer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { compressImageIfNeeded } from './file-helper';
 
@@ -25,11 +24,9 @@ export class FileUploadController {
     private readonly fileUploadService: FileUploadService,
     private prisma: PrismaService,
   ) {
-    // Tự động tạo thư mục upload nếu chưa tồn tại
     if (!fs.existsSync(this.uploadDir)) {
       fs.mkdirSync(this.uploadDir, { recursive: true });
     }
-    // Tự động tạo thư mục chứa chunk tạm nếu chưa tồn tại
     if (!fs.existsSync(this.chunkDir)) {
       fs.mkdirSync(this.chunkDir, { recursive: true });
     }
@@ -41,7 +38,6 @@ export class FileUploadController {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    // Nén ảnh nếu cần thiết
     await compressImageIfNeeded(file.path);
     return this.fileUploadService.handleFileUpload(file);
   }
@@ -63,8 +59,12 @@ export class FileUploadController {
       throw new BadRequestException('No chunk uploaded');
     }
     const { chunkIndex, totalChunks, fileName, id } = body;
+    const chunkIndexInt = this.parseChunkNumber(chunkIndex, 'chunkIndex');
+    const totalChunksInt = this.parseChunkNumber(totalChunks, 'totalChunks');
+    if (chunkIndexInt >= totalChunksInt) {
+      throw new BadRequestException('chunkIndex must be less than totalChunks');
+    }
 
-    // 1. Kiểm tra sự tồn tại của SubData trước khi xử lý ghi chunk
     const foundSubData = await this.prisma.subData.findUnique({
       where: { id },
     });
@@ -72,39 +72,35 @@ export class FileUploadController {
       throw new NotFoundException('SubData not found');
     }
 
-    const chunkBuffer = file.buffer;
     const sanitizedFileName = path.basename(fileName);
-    const finalFileName = `${id}-${sanitizedFileName}`;
+    const extension = path.extname(sanitizedFileName);
+    const finalFileName = id + extension;
+    const chunkTempPath = path.join(this.chunkDir, `${finalFileName}.part.${chunkIndexInt}`);
+    fs.writeFileSync(chunkTempPath, file.buffer as any);
 
-    // Đường dẫn tạm thời để lưu chunk trong thư mục riêng biệt
-    const chunkTempPath = path.join(this.chunkDir, `${finalFileName}.part.${chunkIndex}`);
-    fs.writeFileSync(chunkTempPath, chunkBuffer as any);
+    console.log(`Receiving chunk ${chunkIndexInt + 1}/${totalChunksInt} for file: ${sanitizedFileName}`);
 
-    console.log(`Receiving chunk ${parseInt(chunkIndex) + 1}/${totalChunks} for file: ${sanitizedFileName}`);
-
-    // Nếu đã nhận hết tất cả các chunk, tiến hành ghép chúng lại
-    if (parseInt(chunkIndex) === parseInt(totalChunks) - 1) {
-      // Xóa file cũ nếu tồn tại
-      if (foundSubData.url && fs.existsSync(foundSubData.url)) {
-        unlink(foundSubData.url, () => {});
-      }
-      const finalFilePath = await this.mergeChunks(sanitizedFileName, totalChunks, id);
-      return this.fileUploadService.handleUpdateSubdata(id, finalFilePath);
+    if (chunkIndexInt === totalChunksInt - 1) {
+      const mergedFile = await this.mergeChunks(sanitizedFileName, totalChunksInt, id);
+      return this.replaceChunkFileAndUpdateSubData(id, mergedFile.tempFilePath, mergedFile.finalFilePath, foundSubData.url);
     }
 
-    return { message: `Chunk ${chunkIndex} uploaded successfully` };
+    return { message: `Chunk ${chunkIndexInt} uploaded successfully` };
   }
 
-  // Ghép các chunk lại thành file hoàn chỉnh bằng Stream (Tiết kiệm bộ nhớ RAM)
-  private async mergeChunks(sanitizedFileName: string, totalChunks: string, id: string): Promise<string> {
-    const finalFileName = `${id}-${sanitizedFileName}`;
+  private async mergeChunks(
+    sanitizedFileName: string,
+    totalChunks: number,
+    id: string,
+  ): Promise<{ tempFilePath: string; finalFilePath: string }> {
+    const extension = path.extname(sanitizedFileName);
+    const finalFileName = id + extension;
     const finalFilePath = path.join(this.uploadDir, finalFileName);
-    const writeStream = fs.createWriteStream(finalFilePath);
-
-    const totalChunksInt = parseInt(totalChunks);
+    const tempFilePath = path.join(this.uploadDir, `${finalFileName}.${Date.now()}.merging`);
+    const writeStream = fs.createWriteStream(tempFilePath);
 
     try {
-      for (let i = 0; i < totalChunksInt; i++) {
+      for (let i = 0; i < totalChunks; i++) {
         const chunkPath = path.join(this.chunkDir, `${finalFileName}.part.${i}`);
 
         if (!fs.existsSync(chunkPath)) {
@@ -115,8 +111,7 @@ export class FileUploadController {
           const readStream = fs.createReadStream(chunkPath);
           readStream.pipe(writeStream, { end: false });
           readStream.on('end', () => {
-            // Xóa chunk tạm ngay sau khi đã ghi thành công vào file chính
-            fs.unlink(chunkPath, () => {});
+            fs.unlink(chunkPath, () => { });
             resolve();
           });
           readStream.on('error', (err) => reject(err));
@@ -124,30 +119,67 @@ export class FileUploadController {
       }
 
       writeStream.end();
-
-      // Đợi writeStream hoàn thành đóng file trên đĩa cứng
       await new Promise<void>((resolve, reject) => {
         writeStream.on('finish', () => resolve());
         writeStream.on('error', (err) => reject(err));
       });
 
-      // Tự động kiểm tra và thực hiện nén ảnh dưới 1MB nếu file là ảnh
-      await compressImageIfNeeded(finalFilePath);
+      await compressImageIfNeeded(tempFilePath);
 
-      return finalFilePath;
+      return { tempFilePath, finalFilePath };
     } catch (error) {
       writeStream.end();
-      // Dọn dẹp các file lỗi nếu quá trình ghép gặp sự cố
-      if (fs.existsSync(finalFilePath)) {
-        fs.unlinkSync(finalFilePath);
-      }
-      for (let i = 0; i < totalChunksInt; i++) {
+      await fs.promises.unlink(tempFilePath).catch(() => { });
+      for (let i = 0; i < totalChunks; i++) {
         const chunkPath = path.join(this.chunkDir, `${finalFileName}.part.${i}`);
-        if (fs.existsSync(chunkPath)) {
-          fs.unlinkSync(chunkPath);
-        }
+        await fs.promises.unlink(chunkPath).catch(() => { });
       }
       throw error;
     }
+  }
+
+  private async replaceChunkFileAndUpdateSubData(
+    id: string,
+    tempFilePath: string,
+    finalFilePath: string,
+    oldPath?: string | null,
+  ) {
+    const backupPath = `${finalFilePath}.${Date.now()}.backup`;
+    const finalExists = fs.existsSync(finalFilePath);
+    let backupCreated = false;
+
+    try {
+      if (finalExists) {
+        await fs.promises.rename(finalFilePath, backupPath);
+        backupCreated = true;
+      }
+
+      await fs.promises.rename(tempFilePath, finalFilePath);
+      const updatedSubData = await this.fileUploadService.handleUpdateSubdata(id, finalFilePath);
+
+      if (backupCreated) {
+        await fs.promises.unlink(backupPath).catch(() => { });
+      }
+      if (oldPath && oldPath !== finalFilePath && oldPath !== backupPath) {
+        await fs.promises.unlink(oldPath).catch(() => { });
+      }
+
+      return updatedSubData;
+    } catch (error) {
+      await fs.promises.unlink(finalFilePath).catch(() => { });
+      if (backupCreated && !fs.existsSync(finalFilePath)) {
+        await fs.promises.rename(backupPath, finalFilePath).catch(() => { });
+      }
+      await fs.promises.unlink(tempFilePath).catch(() => { });
+      throw error;
+    }
+  }
+
+  private parseChunkNumber(value: string, fieldName: string): number {
+    const parsedValue = Number(value);
+    if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+      throw new BadRequestException(`${fieldName} must be a non-negative integer`);
+    }
+    return parsedValue;
   }
 }

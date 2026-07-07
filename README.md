@@ -1,43 +1,43 @@
 # IIT Education API
 
-Backend API cho hệ thống IIT Education, xây dựng bằng NestJS, Prisma và MongoDB. Dự án quản lý bài học, gói dữ liệu, khóa kích hoạt, thiết bị, danh mục học tập và luồng xác thực cho client.
+Backend API cho he thong IIT Education, xay dung bang NestJS, Prisma va MongoDB. Du an quan ly bai hoc, goi du lieu, khoa kich hoat, thiet bi, danh muc hoc tap va luong xac thuc cho client.
 
-## Công nghệ chính
+## Cong nghe chinh
 
 - NestJS 10 + TypeScript
-- Prisma ORM với MongoDB
-- JWT authentication cho API quản trị
-- Swagger/OpenAPI tại `/doc`
-- Upload file bằng Multer, hỗ trợ file lớn/chunk upload
+- Prisma ORM voi MongoDB
+- JWT authentication cho API quan tri
+- Swagger/OpenAPI tai `/doc`
+- Upload file bang Multer, ho tro upload file lon theo chunk
 - Postman collection: `iit-education-api.postman_collection.json`
 
-## Yêu cầu môi trường
+## Yeu cau moi truong
 
-- Node.js phù hợp với NestJS 10
+- Node.js phu hop voi NestJS 10
 - npm
 - MongoDB connection string
-- Prisma Client được generate sau khi cài dependency
+- Prisma Client duoc generate sau khi cai dependency
 
-## Cài đặt
+## Cai dat
 
 ```bash
 npm install
 npx prisma generate
 ```
 
-Tạo file `.env` từ `.env.example`:
+Tao file `.env` tu `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-Trên Windows PowerShell có thể dùng:
+Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-## Biến môi trường
+## Bien moi truong
 
 ```env
 DATABASE_URL="mongodb+srv://user:password@host/database"
@@ -48,66 +48,51 @@ CDN="https://your-cdn.example/"
 PORT=3456
 ```
 
-| Biến | Ý nghĩa |
+| Bien | Y nghia |
 | --- | --- |
-| `DATABASE_URL` | Chuỗi kết nối MongoDB cho Prisma |
-| `SECRET_KEY` | Secret ký JWT |
-| `ID` | Tài khoản admin dùng cho `/auth/signin` |
-| `PASSWORD` | Mật khẩu admin dùng cho `/auth/signin` |
-| `CDN` | Base URL dùng khi stream file từ CDN |
-| `PORT` | Port chạy server, mặc định `22899` nếu không khai báo |
+| `DATABASE_URL` | Chuoi ket noi MongoDB cho Prisma |
+| `SECRET_KEY` | Secret ky JWT |
+| `ID` | Tai khoan admin dung cho `/auth/signin` |
+| `PASSWORD` | Mat khau admin dung cho `/auth/signin` |
+| `CDN` | Base URL dung khi stream file tu CDN |
+| `PORT` | Port chay server, mac dinh `22899` neu khong khai bao |
 
-Không commit file `.env` lên Git. Chỉ commit `.env.example`.
+Khong commit file `.env` len Git. Chi commit `.env.example`.
 
-## Chạy dự án
+## Chay du an
 
 ```bash
-# Chạy development
 npm run start
-
-# Watch mode
 npm run start:dev
-
-# Build production
 npm run build
-
-# Chạy build production
 npm run start:prod
 ```
 
-Khi khởi động, server tự tạo các thư mục cần thiết nếu chưa có:
+Khi khoi dong, server tu tao cac thu muc can thiet neu chua co:
 
 - `uploads/`
 - `uploads/chunks/`
 - `thumbnails/`
 
-## Tài liệu API
+## Tai lieu API
 
-Sau khi server chạy, mở Swagger tại:
+Swagger:
 
 ```text
 http://localhost:<PORT>/doc
 ```
 
-Ví dụ nếu `PORT=3456`:
-
-```text
-http://localhost:3456/doc
-```
-
-Postman collection nằm tại:
+Postman collection:
 
 ```text
 iit-education-api.postman_collection.json
 ```
 
-Collection đã khai báo biến `baseUrl`, `port`, `page`, `limit`, `search` và các id thường dùng.
+## Xac thuc
 
-## Xác thực
+Cac API quan tri duoc bao ve bang JWT Bearer Token, tru cac route public.
 
-Các API quản trị được bảo vệ bằng JWT Bearer Token, trừ các route được đánh dấu public.
-
-Đăng nhập admin:
+Dang nhap admin:
 
 ```http
 POST /auth/signin
@@ -119,21 +104,13 @@ Content-Type: application/json
 }
 ```
 
-Response trả về:
-
-```json
-{
-  "access_token": "..."
-}
-```
-
-Khi gọi API quản trị, gửi header:
+Dung token:
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
-Route public hiện có:
+Route public hien co:
 
 - `GET /`
 - `GET /uploads/:file`
@@ -142,17 +119,9 @@ Route public hiện có:
 - `GET /auth/get-data/:key`
 - `GET /sub-data/stream/:file`
 
-## Quy ước response phân trang
+## Phan trang va loc
 
-Các API danh sách lớn hỗ trợ phân trang bằng query `page` và `limit`.
-
-Ví dụ:
-
-```http
-GET /data?page=1&limit=20
-```
-
-Khi có `page` hoặc `limit`, response có dạng:
+Neu truyen `page` hoac `limit`, response co dang:
 
 ```json
 {
@@ -166,13 +135,9 @@ Khi có `page` hoặc `limit`, response có dạng:
 }
 ```
 
-Nếu không truyền `page` và `limit`, API trả về array đầy đủ để giữ tương thích với client cũ.
+Neu khong truyen `page` va `limit`, API tra array day du de giu tuong thich client cu.
 
-## Phân loại API danh sách
-
-### API danh mục nhỏ
-
-Các API này trả toàn bộ danh sách, không phân trang vì số lượng dữ liệu nhỏ và thường dùng để render bộ lọc:
+### API danh muc nho khong phan trang
 
 - `GET /subject`
 - `GET /topic`
@@ -180,11 +145,9 @@ Các API này trả toàn bộ danh sách, không phân trang vì số lượng 
 - `GET /data-type`
 - `GET /data-pack`
 
-### API nghiệp vụ lớn
+### API nghiep vu lon co phan trang/loc
 
-Các API này hỗ trợ phân trang và lọc phía server:
-
-| API | Query hỗ trợ |
+| API | Query ho tro |
 | --- | --- |
 | `GET /data` | `page`, `limit`, `search`, `subjectId`, `topicId`, `gradeId`, `dataTypeId`, `dataPackId` |
 | `GET /client-key` | `page`, `limit`, `search`, `dataPackId`, `deviceId` |
@@ -192,154 +155,157 @@ Các API này hỗ trợ phân trang và lọc phía server:
 | `GET /data-pack/:id/keys` | `page`, `limit`, `search` |
 | `GET /sub-data` | `page`, `limit` |
 
-Ghi chú với `GET /device`:
+## Quan he du lieu chinh
 
-- `keyCount=2`: chỉ lấy thiết bị có đúng 2 keys.
-- `minKeyCount=1`: lấy thiết bị có từ 1 key trở lên.
-- `maxKeyCount=3`: lấy thiết bị có tối đa 3 keys.
-- Có thể kết hợp `minKeyCount` và `maxKeyCount` để lọc theo khoảng.
+Du an co nhieu quan he N-N:
 
-## Quan hệ dữ liệu chính
+- `Data` <-> `Grade`
+- `Data` <-> `DataPack`
+- `ClientKey` <-> `DataPack`
+- `ClientKey` <-> `Device`
 
-Dự án có nhiều quan hệ nhiều-nhiều:
+Cac API update quan he dung co che `set`, tuc la danh sach id gui len se thay the danh sach hien tai. Khi xoa entity, service se disconnect cac quan he lien quan truoc khi xoa.
 
-- `Data` ↔ `Grade`
-- `Data` ↔ `DataPack`
-- `ClientKey` ↔ `DataPack`
-- `ClientKey` ↔ `Device`
+Ghi chu:
 
-Các API update quan hệ đang dùng cơ chế thay thế danh sách bằng `set`, phù hợp khi client gửi danh sách id mới đầy đủ. Khi xóa entity, service sẽ ngắt liên kết liên quan trước khi xóa để tránh dữ liệu quan hệ bị lệch.
+- Xoa `Device` khong xoa `ClientKey`, chi ngat lien ket.
+- Xoa nhieu `Device` cung khong xoa `ClientKey`.
+- Update `ClientKey.dataPackIds` se thay the danh sach data pack hien tai bang danh sach moi.
 
-Ví dụ:
+## Quy uoc ten file upload cho SubData
 
-- Xóa `Device` chỉ xóa thiết bị và ngắt liên kết khỏi `ClientKey`, không xóa key.
-- Xóa nhiều `Device` cũng chỉ xóa thiết bị và disconnect khỏi keys.
-- Update `ClientKey.dataPackIds` sẽ thay thế danh sách gói dữ liệu hiện tại bằng danh sách mới gửi lên.
+Ca hai huong upload lien quan SubData deu luu file theo ten `subDataId.ext`:
 
-## Nhóm API
+- `POST /sub-data/upload/:id`: luu file dang `uploads/:id.ext`.
+- `POST /file-upload/chunk`: file sau khi ghep chunk duoc luu dang `uploads/:id.ext`.
+- `ext` lay tu ten file goc. Vi du subData id `65abc` va file `video.mp4` se luu thanh `uploads/65abc.mp4`.
+
+Neu upload lai file cung extension cho cung SubData, file moi se ghi de len file cu. Neu doi extension, file cu khac duong dan se duoc xoa sau khi file moi ghi thanh cong.
+
+## Nhom API
 
 ### App
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
 | `GET` | `/` | Health check: status, timestamp, uptime, Node version, platform and memory usage |
-| `GET` | `/uploads/:file` | Truy cập file upload public |
+| `GET` | `/uploads/:file` | Stream file upload public |
 
 ### Auth
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/auth/signin` | Đăng nhập admin và nhận JWT |
-| `POST` | `/auth/validate-key` | Client validate key và gắn thiết bị |
-| `GET` | `/auth/get-data/:key` | Client lấy dữ liệu theo key |
+| `POST` | `/auth/signin` | Dang nhap admin va nhan JWT |
+| `POST` | `/auth/validate-key` | Client validate key va gan thiet bi |
+| `GET` | `/auth/get-data/:key` | Client lay du lieu theo key |
 
 ### Subject
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/subject` | Tạo môn học |
-| `POST` | `/subject/upload/:id` | Upload ảnh môn học |
-| `GET` | `/subject` | Lấy toàn bộ môn học |
-| `GET` | `/subject/:id` | Lấy chi tiết môn học |
-| `PATCH` | `/subject/:id` | Cập nhật môn học |
-| `DELETE` | `/subject/:id` | Xóa môn học |
+| `POST` | `/subject` | Tao mon hoc |
+| `POST` | `/subject/upload/:id` | Upload anh mon hoc vao `thumbnails/` |
+| `GET` | `/subject` | Lay toan bo mon hoc |
+| `GET` | `/subject/:id` | Lay chi tiet mon hoc |
+| `PATCH` | `/subject/:id` | Cap nhat mon hoc |
+| `DELETE` | `/subject/:id` | Xoa mon hoc |
 
 ### Topic
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/topic` | Tạo chủ đề |
-| `GET` | `/topic` | Lấy toàn bộ chủ đề |
-| `GET` | `/topic/:id` | Lấy chi tiết chủ đề |
-| `PATCH` | `/topic/:id` | Cập nhật chủ đề |
-| `DELETE` | `/topic/:id` | Xóa chủ đề |
+| `POST` | `/topic` | Tao chu de |
+| `GET` | `/topic` | Lay toan bo chu de |
+| `GET` | `/topic/:id` | Lay chi tiet chu de |
+| `PATCH` | `/topic/:id` | Cap nhat chu de |
+| `DELETE` | `/topic/:id` | Xoa chu de |
 
 ### Grade
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/grade` | Tạo khối lớp |
-| `GET` | `/grade` | Lấy toàn bộ khối lớp |
-| `GET` | `/grade/:id` | Lấy chi tiết khối lớp |
-| `PATCH` | `/grade/:id` | Cập nhật khối lớp |
-| `DELETE` | `/grade/:id` | Xóa khối lớp |
+| `POST` | `/grade` | Tao khoi lop |
+| `GET` | `/grade` | Lay toan bo khoi lop |
+| `GET` | `/grade/:id` | Lay chi tiet khoi lop |
+| `PATCH` | `/grade/:id` | Cap nhat khoi lop |
+| `DELETE` | `/grade/:id` | Xoa khoi lop |
 
 ### Data Type
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/data-type` | Tạo loại dữ liệu |
-| `GET` | `/data-type` | Lấy toàn bộ loại dữ liệu |
-| `GET` | `/data-type/:id` | Lấy chi tiết loại dữ liệu |
-| `PATCH` | `/data-type/:id` | Cập nhật loại dữ liệu |
-| `DELETE` | `/data-type/:id` | Xóa loại dữ liệu |
+| `POST` | `/data-type` | Tao loai du lieu |
+| `GET` | `/data-type` | Lay toan bo loai du lieu |
+| `GET` | `/data-type/:id` | Lay chi tiet loai du lieu |
+| `PATCH` | `/data-type/:id` | Cap nhat loai du lieu |
+| `DELETE` | `/data-type/:id` | Xoa loai du lieu |
 
 ### Data Pack
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/data-pack` | Tạo gói dữ liệu |
-| `GET` | `/data-pack` | Lấy toàn bộ gói dữ liệu |
-| `GET` | `/data-pack/:id` | Lấy chi tiết gói dữ liệu, kèm data và keys |
-| `GET` | `/data-pack/:id/keys` | Lấy keys thuộc gói dữ liệu, có phân trang/lọc |
-| `PATCH` | `/data-pack/:id` | Cập nhật gói dữ liệu |
-| `PATCH` | `/data-pack/copy/:id` | Copy data từ gói khác |
-| `DELETE` | `/data-pack/:id` | Xóa gói dữ liệu |
+| `POST` | `/data-pack` | Tao goi du lieu |
+| `GET` | `/data-pack` | Lay toan bo goi du lieu |
+| `GET` | `/data-pack/:id` | Lay chi tiet goi du lieu |
+| `GET` | `/data-pack/:id/keys` | Lay keys thuoc goi du lieu, co phan trang/loc |
+| `PATCH` | `/data-pack/:id` | Cap nhat goi du lieu |
+| `PATCH` | `/data-pack/copy/:id` | Copy data tu goi khac |
+| `DELETE` | `/data-pack/:id` | Xoa goi du lieu |
 
 ### Data
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/data` | Tạo bài học/dữ liệu |
-| `POST` | `/data/create-many` | Tạo nhiều bài học kèm sub-data |
-| `GET` | `/data` | Lấy danh sách bài học, có phân trang/lọc |
-| `GET` | `/data/:id` | Lấy chi tiết bài học, kèm quan hệ |
-| `PATCH` | `/data/:id` | Cập nhật bài học |
-| `DELETE` | `/data` | Xóa nhiều bài học |
+| `POST` | `/data` | Tao bai hoc/du lieu |
+| `POST` | `/data/create-many` | Tao nhieu bai hoc kem sub-data |
+| `GET` | `/data` | Lay danh sach bai hoc, co phan trang/loc |
+| `GET` | `/data/:id` | Lay chi tiet bai hoc kem quan he |
+| `PATCH` | `/data/:id` | Cap nhat bai hoc |
+| `DELETE` | `/data` | Xoa nhieu bai hoc |
 
 ### Sub Data
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/sub-data` | Tạo sub-data |
-| `POST` | `/sub-data/create-many` | Tạo nhiều sub-data |
-| `POST` | `/sub-data/upload/:id` | Upload file cho sub-data |
-| `GET` | `/sub-data` | Lấy danh sách sub-data, hỗ trợ phân trang |
-| `GET` | `/sub-data/:id` | Lấy chi tiết sub-data |
-| `GET` | `/sub-data/stream/:file` | Stream file sub-data từ CDN |
-| `PATCH` | `/sub-data/:id` | Cập nhật sub-data |
-| `DELETE` | `/sub-data/:id` | Xóa sub-data |
+| `POST` | `/sub-data` | Tao sub-data |
+| `POST` | `/sub-data/create-many` | Tao nhieu sub-data |
+| `POST` | `/sub-data/upload/:id` | Upload file cho sub-data, luu ten `id.ext` |
+| `GET` | `/sub-data` | Lay danh sach sub-data, ho tro phan trang |
+| `GET` | `/sub-data/:id` | Lay chi tiet sub-data |
+| `GET` | `/sub-data/stream/:file` | Stream file sub-data tu CDN |
+| `PATCH` | `/sub-data/:id` | Cap nhat sub-data |
+| `DELETE` | `/sub-data/:id` | Xoa sub-data |
 
 ### Client Key
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/client-key` | Tạo key |
-| `POST` | `/client-key/random` | Tạo nhiều key random |
-| `GET` | `/client-key` | Lấy danh sách key, có phân trang/lọc |
-| `GET` | `/client-key/:id` | Lấy chi tiết key, kèm data packs và devices |
-| `PATCH` | `/client-key/:id` | Cập nhật key |
-| `PATCH` | `/client-key/many` | Cập nhật data packs cho nhiều key |
-| `DELETE` | `/client-key/:id` | Xóa một key |
-| `POST` | `/client-key/delete_many` | Xóa nhiều key |
+| `POST` | `/client-key` | Tao key |
+| `POST` | `/client-key/random` | Tao nhieu key random |
+| `GET` | `/client-key` | Lay danh sach key, co phan trang/loc |
+| `GET` | `/client-key/:id` | Lay chi tiet key kem data packs va devices |
+| `PATCH` | `/client-key/:id` | Cap nhat key |
+| `PATCH` | `/client-key/many` | Cap nhat data packs cho nhieu key |
+| `DELETE` | `/client-key/:id` | Xoa mot key |
+| `POST` | `/client-key/delete_many` | Xoa nhieu key |
 
-Ghi chú cập nhật key:
+Ghi chu cap nhat key:
 
-- Gửi `expirationDate` dạng `YYYY-MM-DD` để đặt hạn dùng.
-- Không gửi `expirationDate` hoặc gửi rỗng sẽ xóa hạn dùng, đưa về `null`.
+- Gui `expirationDate` dang `YYYY-MM-DD` de dat han dung.
+- Khong gui `expirationDate` hoac gui rong se xoa han dung, dua ve `null`.
 
 ### Device
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/device` | Tạo thiết bị |
-| `GET` | `/device` | Lấy danh sách thiết bị, có phân trang/lọc |
-| `GET` | `/device/:id` | Lấy chi tiết thiết bị, kèm keys |
-| `PATCH` | `/device/:id` | Cập nhật thiết bị và danh sách keys |
-| `DELETE` | `/device/:id` | Xóa một thiết bị |
-| `POST` | `/device/delete_many` | Xóa nhiều thiết bị |
+| `POST` | `/device` | Tao thiet bi |
+| `GET` | `/device` | Lay danh sach thiet bi, co phan trang/loc |
+| `GET` | `/device/:id` | Lay chi tiet thiet bi kem keys |
+| `PATCH` | `/device/:id` | Cap nhat thiet bi va danh sach keys |
+| `DELETE` | `/device/:id` | Xoa mot thiet bi |
+| `POST` | `/device/delete_many` | Xoa nhieu thiet bi |
 
-Body mẫu xóa nhiều thiết bị:
+Body mau xoa nhieu thiet bi:
 
 ```json
 {
@@ -348,37 +314,28 @@ Body mẫu xóa nhiều thiết bị:
 }
 ```
 
-Có thể dùng `deviceIds`, `devices`, hoặc `duids`. Xóa thiết bị không xóa `ClientKey`; chỉ ngắt liên kết giữa thiết bị và key.
+Co the dung `deviceIds`, `devices`, hoac `duids`. Xoa thiet bi khong xoa `ClientKey`, chi ngat lien ket giua thiet bi va key.
 
 ### File Upload
 
-| Method | Endpoint | Mô tả |
+| Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/file-upload` | Upload file thường |
-| `POST` | `/file-upload/chunk` | Upload file theo chunk |
+| `POST` | `/file-upload` | Upload file thuong |
+| `POST` | `/file-upload/chunk` | Upload file theo chunk cho sub-data, luu ten `id.ext` |
 
-## Lệnh kiểm tra
+## Lenh kiem tra
 
 ```bash
-# Build TypeScript/NestJS
 npm run build
-
-# Format code
 npm run format
-
-# Lint và auto-fix
 npm run lint
-
-# Unit test
 npm run test
-
-# E2E test
 npm run test:e2e
 ```
 
-## Lưu ý vận hành
+## Luu y van hanh
 
-- Dự án đang dùng Prisma 5.x. Nếu IDE cài extension Prisma mới cảnh báo về Prisma 7, cần đồng bộ theo version thực tế của project trước khi migrate cấu hình.
-- `tsconfig.build.json` đã tắt incremental build để tránh cache cũ làm thiếu `dist/main.js`.
-- Nếu đổi `PORT`, cập nhật cả `.env` và biến `port` trong Postman collection nếu cần.
-- Các route quản trị cần JWT, trừ các route public đã liệt kê ở phần xác thực.
+- Du an dang dung Prisma 5.x. Neu IDE canh bao Prisma 7, can dong bo theo version thuc te truoc khi migrate cau hinh.
+- `tsconfig.build.json` tat incremental build de tranh cache cu lam thieu `dist/main.js`.
+- Neu doi `PORT`, cap nhat ca `.env` va bien `port` trong Postman collection neu can.
+- Cac route quan tri can JWT, tru cac route public da liet ke.
