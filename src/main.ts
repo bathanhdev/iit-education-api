@@ -67,7 +67,7 @@ async function bootstrap() {
     console.log(`${req.method} ${req.originalUrl}`, {
       params: req.params,
       query: req.query,
-      // body: req.body,
+      body: req.body,
     });
     next();
   });

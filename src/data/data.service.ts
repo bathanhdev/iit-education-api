@@ -30,56 +30,47 @@ export class DataService {
   }
 
   private async createOneWithSubData(createDatumDto: CreateDatumWithSubDataDto): Promise<Data | null> {
-    return this.prisma.$transaction(async (prisma) => {
-      const subData = createDatumDto.subData ?? [];
-      const createdDatum = await prisma.data.create({
-        data: {
-          Subject: {
-            connect: {
-              id: createDatumDto.subjectId
-            }
-          },
-          Topic: {
-            connect: {
-              id: createDatumDto.topicId
-            }
-          },
-          Grades: {
-            connect: [...new Set(createDatumDto.gradeIds)].map(id => ({ id }))
-          },
-          Type: {
-            connect: {
-              id: createDatumDto.dataTypeId
-            }
-          },
-          DataPacks: {
-            connect: [...new Set(createDatumDto.dataPackIds ?? [])].map(id => ({ id }))
-          },
-          name: createDatumDto.name,
-          thumbnail: createDatumDto.thumbnail,
-          author: createDatumDto.author,
-          uses: createDatumDto.uses,
-          decs: createDatumDto.decs,
-        }
-      })
+    const subData = createDatumDto.subData ?? createDatumDto.SubData ?? [];
 
-      if (subData.length) {
-        await prisma.subData.createMany({
-          data: subData.map(subDatum => ({
+    return this.prisma.data.create({
+      data: {
+        Subject: {
+          connect: {
+            id: createDatumDto.subjectId
+          }
+        },
+        Topic: {
+          connect: {
+            id: createDatumDto.topicId
+          }
+        },
+        Grades: {
+          connect: [...new Set(createDatumDto.gradeIds)].map(id => ({ id }))
+        },
+        Type: {
+          connect: {
+            id: createDatumDto.dataTypeId
+          }
+        },
+        DataPacks: {
+          connect: [...new Set(createDatumDto.dataPackIds ?? [])].map(id => ({ id }))
+        },
+        SubData: subData.length ? {
+          create: subData.map(subDatum => ({
             name: subDatum.name,
             url: subDatum.url,
             decs: subDatum.decs,
-            dataId: createdDatum.id,
           }))
-        })
+        } : undefined,
+        name: createDatumDto.name,
+        thumbnail: createDatumDto.thumbnail,
+        author: createDatumDto.author,
+        uses: createDatumDto.uses,
+        decs: createDatumDto.decs,
+      },
+      include: {
+        SubData: true,
       }
-
-      return prisma.data.findUnique({
-        where: { id: createdDatum.id },
-        include: { SubData: true }
-      })
-    }, {
-      timeout: 20000,
     })
   }
 

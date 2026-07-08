@@ -19,6 +19,12 @@ export class CreateDatumWithSubDataDto extends CreateDatumDto {
     @Type(() => CreateNestedSubDatumDto)
     @IsOptional()
     subData?: CreateNestedSubDatumDto[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateNestedSubDatumDto)
+    @IsOptional()
+    SubData?: CreateNestedSubDatumDto[];
 }
 
 export class CreateManyDataDto {
