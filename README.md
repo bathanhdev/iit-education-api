@@ -254,9 +254,11 @@ Neu upload lai file cung extension cho cung SubData, file moi se ghi de len file
 
 ### Data
 
+`POST /data` now accepts optional `subData`, same nested shape as one item inside `POST /data/create-many`.
+
 | Method | Endpoint | Mo ta |
 | --- | --- | --- |
-| `POST` | `/data` | Tao bai hoc/du lieu |
+| `POST` | `/data` | Tao bai hoc/du lieu, co the gui kem `subData` |
 | `POST` | `/data/create-many` | Tao nhieu bai hoc kem sub-data |
 | `GET` | `/data` | Lay danh sach bai hoc, co phan trang/loc |
 | `GET` | `/data/:id` | Lay chi tiet bai hoc kem quan he |

@@ -656,7 +656,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"subjectId\": \"{{subjectId}}\",\n  \"topicId\": \"{{topicId}}\",\n  \"gradeIds\": [\"{{gradeId}}\"],\n  \"dataTypeId\": \"{{dataTypeId}}\",\n  \"dataPackIds\": [\"{{dataPackId}}\"],\n  \"name\": \"Sample Lesson\",\n  \"thumbnail\": \"\",\n  \"author\": \"IIT\",\n  \"uses\": \"Study\",\n  \"decs\": \"Sample data item\"\n}"
+              "raw": "{\n  \"subjectId\": \"{{subjectId}}\",\n  \"topicId\": \"{{topicId}}\",\n  \"gradeIds\": [\n    \"{{gradeId}}\"\n  ],\n  \"dataTypeId\": \"{{dataTypeId}}\",\n  \"dataPackIds\": [\n    \"{{dataPackId}}\"\n  ],\n  \"name\": \"Sample Lesson\",\n  \"thumbnail\": \"\",\n  \"author\": \"IIT\",\n  \"uses\": \"Study\",\n  \"decs\": \"Sample data item\",\n  \"subData\": [\n    {\n      \"name\": \"Sample Sub Data\",\n      \"url\": \"\",\n      \"decs\": \"Sample sub data item\"\n    }\n  ]\n}"
             },
             "url": "{{baseUrl}}/data"
           }

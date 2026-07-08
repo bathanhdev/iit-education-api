@@ -1,15 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { DataService } from './data.service';
-import { CreateDatumDto } from './dto/create-datum.dto';
 import { UpdateDatumDto } from './dto/update-datum.dto';
-import { CreateManyDataDto } from './dto/create-many-data.dto';
+import { CreateDatumWithSubDataDto, CreateManyDataDto } from './dto/create-many-data.dto';
 
 @Controller('data')
 export class DataController {
   constructor(private readonly dataService: DataService) { }
 
   @Post()
-  create(@Body() createDatumDto: CreateDatumDto) {
+  create(@Body() createDatumDto: CreateDatumWithSubDataDto) {
     return this.dataService.create(createDatumDto);
   }
 

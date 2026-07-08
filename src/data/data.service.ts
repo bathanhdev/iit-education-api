@@ -1,110 +1,85 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateDatumDto } from './dto/create-datum.dto';
 import { UpdateDatumDto } from './dto/update-datum.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Data } from '@prisma/client';
 import { unlink } from 'fs';
-import { CreateManyDataDto } from './dto/create-many-data.dto';
+import { CreateDatumWithSubDataDto, CreateManyDataDto } from './dto/create-many-data.dto';
 import { getQueryValue, paginate, PaginationQuery } from 'src/common/pagination';
 
 @Injectable()
 export class DataService {
   constructor(private prisma: PrismaService) { }
 
-  async create(createDatumDto: CreateDatumDto): Promise<Data | null> {
-    return this.prisma.data.create({
-      data: {
-        Subject: {
-          connect: {
-            id: createDatumDto.subjectId
-          }
-        },
-        Topic: {
-          connect: {
-            id: createDatumDto.topicId
-          }
-        },
-        Grades: {
-          connect: createDatumDto.gradeIds.map(id => ({ id }))
-        },
-        Type: {
-          connect: {
-            id: createDatumDto.dataTypeId
-          }
-        },
-        DataPacks: {
-          connect: createDatumDto.dataPackIds.map(id => ({ id }))
-        },
-        name: createDatumDto.name,
-        thumbnail: createDatumDto.thumbnail,
-        author: createDatumDto.author,
-        uses: createDatumDto.uses,
-        decs: createDatumDto.decs,
-      }
-    })
+  async create(createDatumDto: CreateDatumWithSubDataDto): Promise<Data | null> {
+    return this.createOneWithSubData(createDatumDto);
   }
 
   async createMany(createManyDataDto: CreateManyDataDto): Promise<any[]> {
-    if (!createManyDataDto.data.length) {
+    if (!createManyDataDto.data?.length) {
       throw new BadRequestException('Data is required')
     }
 
+    const createdData = [];
+
+    for (const createDatumDto of createManyDataDto.data) {
+      const createdDatumWithSubData = await this.createOneWithSubData(createDatumDto)
+      createdData.push(createdDatumWithSubData)
+    }
+
+    return createdData;
+  }
+
+  private async createOneWithSubData(createDatumDto: CreateDatumWithSubDataDto): Promise<Data | null> {
     return this.prisma.$transaction(async (prisma) => {
-      const createdData = [];
-
-      for (const createDatumDto of createManyDataDto.data) {
-        const subData = createDatumDto.subData ?? [];
-        const createdDatum = await prisma.data.create({
-          data: {
-            Subject: {
-              connect: {
-                id: createDatumDto.subjectId
-              }
-            },
-            Topic: {
-              connect: {
-                id: createDatumDto.topicId
-              }
-            },
-            Grades: {
-              connect: createDatumDto.gradeIds.map(id => ({ id }))
-            },
-            Type: {
-              connect: {
-                id: createDatumDto.dataTypeId
-              }
-            },
-            DataPacks: {
-              connect: createDatumDto.dataPackIds.map(id => ({ id }))
-            },
-            name: createDatumDto.name,
-            thumbnail: createDatumDto.thumbnail,
-            author: createDatumDto.author,
-            uses: createDatumDto.uses,
-            decs: createDatumDto.decs,
-          }
-        })
-
-        if (subData.length) {
-          await prisma.subData.createMany({
-            data: subData.map(subDatum => ({
-              name: subDatum.name,
-              url: subDatum.url,
-              decs: subDatum.decs,
-              dataId: createdDatum.id,
-            }))
-          })
+      const subData = createDatumDto.subData ?? [];
+      const createdDatum = await prisma.data.create({
+        data: {
+          Subject: {
+            connect: {
+              id: createDatumDto.subjectId
+            }
+          },
+          Topic: {
+            connect: {
+              id: createDatumDto.topicId
+            }
+          },
+          Grades: {
+            connect: [...new Set(createDatumDto.gradeIds)].map(id => ({ id }))
+          },
+          Type: {
+            connect: {
+              id: createDatumDto.dataTypeId
+            }
+          },
+          DataPacks: {
+            connect: [...new Set(createDatumDto.dataPackIds ?? [])].map(id => ({ id }))
+          },
+          name: createDatumDto.name,
+          thumbnail: createDatumDto.thumbnail,
+          author: createDatumDto.author,
+          uses: createDatumDto.uses,
+          decs: createDatumDto.decs,
         }
+      })
 
-        const createdDatumWithSubData = await prisma.data.findUnique({
-          where: { id: createdDatum.id },
-          include: { SubData: true }
+      if (subData.length) {
+        await prisma.subData.createMany({
+          data: subData.map(subDatum => ({
+            name: subDatum.name,
+            url: subDatum.url,
+            decs: subDatum.decs,
+            dataId: createdDatum.id,
+          }))
         })
-
-        createdData.push(createdDatumWithSubData)
       }
 
-      return createdData;
+      return prisma.data.findUnique({
+        where: { id: createdDatum.id },
+        include: { SubData: true }
+      })
+    }, {
+      timeout: 20000,
     })
   }
 
